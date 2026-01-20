@@ -1,7 +1,7 @@
 # 🛢️ Refinery Arbitrage Engine
 **Real-Time Commodity Margin & Equity Valuation Monitor**
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://your-app-url-here.streamlit.app](https://refinery-arbitrage-engine-uturqbhqngbykahhfonr6k.streamlit.app/))
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://your-app-url-here.streamlit.app]([https://refinery-arbitrage-engine-uturqbhqngbykahhfonr6k.streamlit.app/](https://refinery-arbitrage-engine-uturqbhqngbykahhfonr6k.streamlit.app/)))
 *(Click the badge above to launch the live dashboard)*
 
 ### 📊 Business Context
