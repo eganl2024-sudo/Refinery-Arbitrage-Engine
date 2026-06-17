@@ -1,6 +1,11 @@
 # Refinery Arbitrage Engine
 
+[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://refinery-arbitrage-engine-uturqbhqngbykahhfonr6k.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python)](https://python.org)
+
 A live financial analytics platform that models US Gulf Coast refinery economics and tests whether institutional energy commentary predicts margin movements.
+
+**Live dashboard:** https://refinery-arbitrage-engine-uturqbhqngbykahhfonr6k.streamlit.app/
 
 ---
 
@@ -26,6 +31,7 @@ Bidirectional Granger causality tests at lags of 1–4 weeks found no significan
 |---|---|
 | `src/data_pipeline.py` | Market data ingestion via yfinance (CL=F, RB=F, HO=F, NG=F, VLO, PSX) |
 | `src/db.py` | DuckDB database layer — all I/O, table init, and read/write helpers |
+| `src/bootstrap.py` | Cold-start bootstrap — auto-generates market data on first deploy |
 | `src/spread_calculator.py` | 3:2:1 crack spread, net margin, and moving average calculations |
 | `src/signal_generator.py` | Z-score and percentile market signal metrics |
 | `src/correlation_engine.py` | VLO price correlation and rolling OLS regression |
@@ -84,6 +90,19 @@ python src/causality_analysis.py
 # 4. Launch the dashboard
 streamlit run app/streamlit_app.py
 ```
+
+---
+
+## Streamlit Cloud Deployment
+
+| Setting | Value |
+|---|---|
+| Repository | `eganl2024-sudo/Refinery-Arbitrage-Engine` |
+| Branch | `main` |
+| App entrypoint | `app/streamlit_app.py` |
+| Python version | 3.11 |
+| First-boot behavior | Market data fetched automatically via `src/bootstrap.py` (~30s) |
+| Sentiment tab | Requires separate NLP pipeline run; degrades gracefully if absent |
 
 ---
 

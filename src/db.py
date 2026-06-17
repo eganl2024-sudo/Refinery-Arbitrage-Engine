@@ -2,7 +2,9 @@ import duckdb
 import pandas as pd
 import os
 
-DB_PATH = "data/market_data.duckdb"
+# --- Absolute path resolution: safe in any launch context ---
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(PROJECT_ROOT, "data", "market_data.duckdb")
 
 def get_connection():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -122,11 +124,9 @@ def write_raw(df):
         df_temp.index.name = 'Date'
     df_temp = df_temp.reset_index()
     df_temp['Date'] = pd.to_datetime(df_temp['Date'])
-    
+
     con.register('temp_df', df_temp)
-    # Using DELETE + INSERT to effectively perform an INSERT OR REPLACE
     con.execute("DELETE FROM raw_market_data WHERE Date IN (SELECT Date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO raw_market_data ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -138,10 +138,9 @@ def write_processed(df):
         df_temp.index.name = 'Date'
     df_temp = df_temp.reset_index()
     df_temp['Date'] = pd.to_datetime(df_temp['Date'])
-    
+
     con.register('temp_df', df_temp)
     con.execute("DELETE FROM processed_spread_data WHERE Date IN (SELECT Date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO processed_spread_data ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -176,10 +175,9 @@ def write_eia_reports(df):
         df_temp.index.name = 'report_date'
         df_temp = df_temp.reset_index()
     df_temp['report_date'] = pd.to_datetime(df_temp['report_date'])
-    
+
     con.register('temp_df', df_temp)
     con.execute("DELETE FROM eia_reports WHERE report_date IN (SELECT report_date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO eia_reports ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -192,13 +190,10 @@ def write_eia_sentiment(df):
         df_temp.index.name = 'report_date'
         df_temp = df_temp.reset_index()
     df_temp['report_date'] = pd.to_datetime(df_temp['report_date'])
-    
-    # Fill NAs
     df_temp = df_temp.fillna(0.0)
-    
+
     con.register('temp_df', df_temp)
     con.execute("DELETE FROM eia_sentiment WHERE report_date IN (SELECT report_date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO eia_sentiment ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -211,10 +206,9 @@ def write_sentiment_spread_merged(df):
         df_temp.index.name = 'report_date'
         df_temp = df_temp.reset_index()
     df_temp['report_date'] = pd.to_datetime(df_temp['report_date'])
-    
+
     con.register('temp_df', df_temp)
     con.execute("DELETE FROM sentiment_spread_merged WHERE report_date IN (SELECT report_date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO sentiment_spread_merged ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -227,10 +221,9 @@ def write_sentiment_spread_rolling_corr(df):
         df_temp.index.name = 'date'
         df_temp = df_temp.reset_index()
     df_temp['date'] = pd.to_datetime(df_temp['date'])
-    
+
     con.register('temp_df', df_temp)
     con.execute("DELETE FROM sentiment_spread_rolling_corr WHERE date IN (SELECT date FROM temp_df)")
-    
     cols = ", ".join(df_temp.columns)
     con.execute(f"INSERT INTO sentiment_spread_rolling_corr ({cols}) SELECT {cols} FROM temp_df")
     con.close()
@@ -256,15 +249,15 @@ def read_table(table_name):
     return df
 
 def migrate_from_csv():
-    raw_path = "data/raw/market_data.csv"
-    processed_path = "data/processed/spread_data.csv"
-    
+    raw_path = os.path.join(PROJECT_ROOT, "data", "raw", "market_data.csv")
+    processed_path = os.path.join(PROJECT_ROOT, "data", "processed", "spread_data.csv")
+
     if os.path.exists(raw_path):
         print(f"Migrating {raw_path} to DuckDB...")
         df = pd.read_csv(raw_path, index_col=0, parse_dates=True)
         write_raw(df)
         os.rename(raw_path, raw_path + ".bak")
-        
+
     if os.path.exists(processed_path):
         print(f"Migrating {processed_path} to DuckDB...")
         df = pd.read_csv(processed_path, index_col=0, parse_dates=True)
